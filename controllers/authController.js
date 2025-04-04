@@ -47,11 +47,21 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: 'Invalid password' });
     }
 
-    // Buat JWT token (opsional, jika Anda butuh token)
+    // Tentukan masa aktif token selama 24 jam (dalam detik)
+    const jwtExpirySeconds = 24 * 60 * 60;
+
+    // Buat token dengan masa aktif 24 jam
     const token = jwt.sign(
       { id: user.id, role: user.role },
-      process.env.JWT_SECRET
+      process.env.JWT_SECRET,
+      { expiresIn: jwtExpirySeconds }
     );
+
+    // Hitung waktu kadaluarsa (expired_at) sebagai waktu saat ini + 24 jam
+    const expiredAt = new Date(Date.now() + jwtExpirySeconds * 1000);
+
+    // Simpan token dan expired_at ke dalam tabel users_token
+    await userModel.saveUserToken(user.id, token, expiredAt);
 
     return res.status(200).json({
       message: 'Login successful',
