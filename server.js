@@ -13,6 +13,7 @@ app.use(express.json());
 // Routes
 app.use('/auth', authRoutes);
 app.use('/profile', profileRoutes);
+app.use('/uploads', express.static('uploads'));
 
 // Jalankan server
 const PORT = process.env.PORT || 3000;

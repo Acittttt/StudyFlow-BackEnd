@@ -62,8 +62,15 @@ async function findUserByUsername(username) {
 async function findProfileByUserId(userId) {
   const query = `
     SELECT 
-      u.id, u.full_name, u.username, u.email, u.role, u.created_at,
-      up.profile_picture_url, up.alamat, up.tanggal_bergabung
+      u.id,
+      u.full_name,
+      u.username,
+      u.email,
+      u.role,
+      u.created_at,       -- timestamp
+      up.profile_picture_url,
+      up.alamat,
+      up.tanggal_bergabung
     FROM users u
     LEFT JOIN users_profile up ON u.id = up.user_id
     WHERE u.id = $1
