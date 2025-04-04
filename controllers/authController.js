@@ -79,3 +79,52 @@ exports.login = async (req, res) => {
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { username, email, newPassword } = req.body;
+    
+    // Cari user berdasarkan username
+    const user = await userModel.findUserByUsername(username);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Pastikan email yang dikirim cocok dengan email user
+    if (user.email !== email) {
+      return res.status(400).json({ message: 'Email does not match' });
+    }
+    
+    // Hash password baru
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    
+    // Perbarui password di database
+    const updatedUser = await userModel.updatePassword(user.id, hashedPassword);
+    
+    if (updatedUser) {
+      return res.status(200).json({ message: 'Password updated successfully' });
+    } else {
+      return res.status(500).json({ message: 'Failed to update password' });
+    }
+  } catch (error) {
+    console.error('Forgot Password error:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+exports.verifyUser = async (req, res) => {
+  try {
+    const { username, email } = req.body;
+    const user = await userModel.findUserByUsername(username);
+    if (!user) {
+      return res.status(404).json({ valid: false, message: 'User not found' });
+    }
+    if (user.email !== email) {
+      return res.status(400).json({ valid: false, message: 'Email does not match' });
+    }
+    return res.status(200).json({ valid: true, message: 'User verified' });
+  } catch (error) {
+    console.error('Verify user error:', error);
+    return res.status(500).json({ valid: false, message: 'Internal server error' });
+  }
+};
