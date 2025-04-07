@@ -4,7 +4,7 @@ const path = require('path');
 // Setup storage engine untuk menyimpan gambar
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, './uploads/'); // Folder penyimpanan gambar
+    cb(null, './uploads/');
   },
   filename: (req, file, cb) => {
     // Nama file unik dengan timestamp
@@ -15,9 +15,9 @@ const storage = multer.diskStorage({
 // Inisialisasi multer dengan konfigurasi storage
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 50 * 1024 * 1024 }, // Batas ukuran file (50MB)
+  limits: { fileSize: 50 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    const filetypes = /jpeg|jpg|png/;
+    const filetypes = /jpeg|jpg|png|heic|heif/;
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = filetypes.test(file.mimetype);
 

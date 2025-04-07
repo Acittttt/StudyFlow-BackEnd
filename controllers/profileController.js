@@ -2,9 +2,7 @@ const userModel = require('../models/user');
 
 exports.getProfile = async (req, res) => {
   try {
-    const userId = req.user.id; // Ambil ID pengguna dari token JWT
-
-    // Cari data profil pengguna (join antara tabel users dan users_profile)
+    const userId = req.user.id;
     const userProfile = await userModel.findProfileByUserId(userId);
     if (!userProfile) {
       return res.status(404).json({ message: 'Profile not found' });
@@ -12,7 +10,16 @@ exports.getProfile = async (req, res) => {
 
     return res.status(200).json({
       message: 'Profile fetched successfully',
-      profile: userProfile,
+      profile: {
+        full_name: userProfile.full_name,
+        username: userProfile.username,
+        email: userProfile.email,
+        role: userProfile.role,
+        created_at: userProfile.created_at,
+        profile_picture_url: userProfile.profile_picture_url,
+        alamat: userProfile.alamat,
+        tanggal_bergabung: userProfile.tanggal_bergabung
+      }
     });
   } catch (error) {
     console.error('Error fetching profile:', error);
@@ -30,7 +37,7 @@ exports.updateProfile = async (req, res) => {
   
     // Jika ada gambar yang diunggah, simpan gambar dan buat URL-nya
     if (req.file) {
-      profile_picture_url = `http://localhost:3000/uploads/${req.file.filename}`;
+      profile_picture_url = `http://192.168.1.7:3000/uploads/${req.file.filename}`;
     }
   
     // 1. Memperbarui data di tabel users (jika ada perubahan pada username, email, full_name)
