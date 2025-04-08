@@ -48,7 +48,7 @@ exports.login = async (req, res) => {
     }
 
     // Tentukan masa aktif token selama 24 jam (dalam detik)
-    const jwtExpirySeconds = 24 * 60 * 60;
+    const jwtExpirySeconds = 4 * 30 * 24 * 60 * 60;
 
     // Buat token dengan masa aktif 24 jam
     const token = jwt.sign(
