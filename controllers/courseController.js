@@ -128,10 +128,31 @@ const editCourse = async (req, res) => {
     }
   };
   
+  // GET ALL COURSES FOR USER
+const getAvailableCourses = async (req, res) => {
+  try {
+    const query = `
+      SELECT title, description, price, created_at 
+      FROM courses 
+      ORDER BY created_at DESC;
+    `;
+    const result = await pool.query(query);
+    res.status(200).json({
+      message: 'Courses retrieved successfully',
+      data: result.rows
+    });
+  } catch (error) {
+    console.error('Error fetching courses:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+  
   
   module.exports = {
     addCourse,
     getMyCourses,
     editCourse,
-    deleteCourse
+    deleteCourse,
+    getAvailableCourses
   };
