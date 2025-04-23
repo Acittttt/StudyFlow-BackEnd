@@ -3,6 +3,9 @@ const router = express.Router();
 const courseController = require('../controllers/courseController');
 const authenticate = require('../middlewares/authMiddleware');
 
+// Route Course (untuk user)
+router.get('/', authenticate, courseController.getAvailableCourses);
+
 // Route Course(hanya untuk owner)
 router.post('/add', authenticate, courseController.addCourse);
 router.get('/my-courses', authenticate, courseController.getMyCourses);

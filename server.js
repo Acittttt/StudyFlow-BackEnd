@@ -4,6 +4,7 @@ const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const courseRoutes = require('./routes/courseRoutes');
+const enrollmentRoutes = require('./routes/enrollRoutes');
 
 const app = express();
 
@@ -16,6 +17,20 @@ app.use('/auth', authRoutes);
 app.use('/profile', profileRoutes);
 app.use('/uploads', express.static('uploads'));
 app.use('/course', courseRoutes)
+app.use('/enroll', enrollmentRoutes);
+
+console.log('Rute yang terdaftar:');
+app._router.stack.forEach(function(r){
+  if (r.route && r.route.path){
+    console.log(r.route.path)
+  } else if (r.name === 'router') {
+    r.handle.stack.forEach(function(layer) {
+      if (layer.route) {
+        console.log(r.regexp, layer.route.path);
+      }
+    });
+  }
+});
 
 // Jalankan server
 const PORT = process.env.PORT || 3000;
