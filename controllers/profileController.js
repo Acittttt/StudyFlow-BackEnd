@@ -37,16 +37,16 @@ exports.updateProfile = async (req, res) => {
   
     // Jika ada gambar yang diunggah, simpan gambar dan buat URL-nya
     if (req.file) {
-      profile_picture_url = `http://192.168.1.7:3000/uploads/${req.file.filename}`;
-    }
+      profile_picture_url = `/uploads/${req.file.filename}`;
+    }    
   
-    // 1. Memperbarui data di tabel users (jika ada perubahan pada username, email, full_name)
+    // Memperbarui data di tabel users (jika ada perubahan pada username, email, full_name)
     let updatedUser = null;
     if (full_name || username || email) {
       updatedUser = await userModel.updateUser(userId, full_name, username, email);
     }
   
-    // 2. Memperbarui data di tabel users_profile (alamat, gambar profil)
+    // Memperbarui data di tabel users_profile (alamat, gambar profil)
     let updatedProfile = await userModel.updateProfileDetails(userId, alamat, profile_picture_url);
   
     // Jika tidak ada perubahan pada keduanya

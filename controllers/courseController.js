@@ -132,7 +132,7 @@ const editCourse = async (req, res) => {
 const getAvailableCourses = async (req, res) => {
   try {
     const query = `
-      SELECT title, description, price, created_at 
+      SELECT id, title, description, price, created_at 
       FROM courses 
       ORDER BY created_at DESC;
     `;

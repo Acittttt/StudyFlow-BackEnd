@@ -2,10 +2,18 @@ const pool = require('../config/database');
 
 const enrollCourse = async (req, res) => {
   try {
+    // Di controller enroll
+    console.log("🔥 BODY:", req.body);
     const userId = req.user.id;
     const userRole = req.user.role;
-    const { courseId } = req.body;
+    let courseId = req.body.courseId; // Ambil langsung dari camelCase
+    console.log("courseId:", courseId, typeof courseId);
+    console.log("Body yg diterima dari Android:", req.body);
 
+    if (!courseId || typeof courseId !== 'number' || courseId <= 0) {
+      return res.status(400).json({ message: 'Invalid courseId' });
+    }
+    
     if (userRole !== 'User') {
       return res.status(403).json({ message: 'Only users can enroll in courses' });
     }
