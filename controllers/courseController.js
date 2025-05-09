@@ -147,8 +147,6 @@ const getAvailableCourses = async (req, res) => {
   }
 };
 
-  
-  
   module.exports = {
     addCourse,
     getMyCourses,
