@@ -54,9 +54,9 @@ const getUserEnrollments = async (req, res) => {
       const userId = req.user.id; // Mengambil ID user dari token JWT
       
       const enrolledCourses = await pool.query(
-        `SELECT c.id, c.title, c.description, c.created_at, ce.enrolled_at
+        `SELECT c.course_id, c.title, c.description, c.created_at, ce.enrolled_at
         FROM course_enrollments ce
-        JOIN courses c ON ce.course_id = c.id
+        JOIN courses c ON ce.course_id = c.course_id
         WHERE ce.student_id = $1
         ORDER BY ce.enrolled_at DESC;`,
         [userId]
