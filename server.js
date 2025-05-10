@@ -19,18 +19,18 @@ app.use('/uploads', express.static('uploads'));
 app.use('/course', courseRoutes)
 app.use('/enroll', enrollmentRoutes);
 
-// console.log('Rute yang terdaftar:');
-// app._router.stack.forEach(function(r){
-//   if (r.route && r.route.path){
-//     console.log(r.route.path)
-//   } else if (r.name === 'router') {
-//     r.handle.stack.forEach(function(layer) {
-//       if (layer.route) {
-//         console.log(r.regexp, layer.route.path);
-//       }
-//     });
-//   }
-// });
+console.log('Rute yang terdaftar:');
+app._router.stack.forEach(function(r){
+  if (r.route && r.route.path){
+    console.log(r.route.path)
+  } else if (r.name === 'router') {
+    r.handle.stack.forEach(function(layer) {
+      if (layer.route) {
+        console.log(r.regexp, layer.route.path);
+      }
+    });
+  }
+});
 
 // Jalankan server
 const PORT = process.env.PORT || 3000;
