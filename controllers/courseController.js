@@ -1,156 +1,155 @@
-const pool = require('../config/database')
+// controllers/courseController.js
+const pool = require('../config/database');
 
-//ADD COURSE//
-const addCourse = async (req, res) => {
-    try {
-      const { title, description, price } = req.body;
-      const userId = req.user.id;
-      const userRole = req.user.role;
-        // Cek role
-      if (userRole !== 'Owner') {
-        return res.status(403).json({ message: 'Only owner can add a course' });
-      }
-  
-      const query = `
-        INSERT INTO courses (teacher_id, title, description, price, created_at)
-        VALUES ($1, $2, $3, $4, NOW())
-        RETURNING *;
-      `;
-      const { rows } = await pool.query(query, [userId, title, description, price]);
-  
-      return res.status(201).json({
-        message: 'Course added successfully',
-        course: rows[0],
-      });
-    } catch (error) {
-      console.error('Add course error:', error);
-      return res.status(500).json({ message: 'Internal server error' });
-    }
-  };
+// Helper cek kepemilikan
+async function isOwner(courseId, ownerId) {
+  const { rowCount } = await pool.query(
+    `SELECT 1 FROM courses WHERE course_id = $1 AND owner_id = $2`,
+    [courseId, ownerId]
+  );
+  return rowCount > 0;
+}
 
-//GET COURSE//
-const getMyCourses = async (req, res) => {
-    try {
-      if (req.user.role !== 'Owner') {
-        return res.status(403).json({ message: 'Only owners can view their courses' });
-      }
-  
-      const result = await pool.query( // ← ini sudah benar
-        `SELECT * FROM courses WHERE teacher_id = $1`, // pakai teacher_id, bukan owner_id
-        [req.user.id]
-      );
-  
-      res.status(200).json({
-        message: 'Courses retrieved successfully',
-        data: result.rows
-      });
-    } catch (error) {
-      console.error('Error fetching owner courses:', error);
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  };
+// ADD COURSE
+exports.addCourse = async (req, res) => {
+  const { title, description, end_courses } = req.body;
+  const ownerId = req.user.id;
 
-//PUT COURSE//
-const editCourse = async (req, res) => {
-    console.log('Edit request from user:', req.user);
-    console.log('Course ID:', req.params.courseId);
-    console.log('New data:', req.body);
+  // Validasi sederhana
+  if (!title || title.trim().length < 3) {
+    return res.status(400).json({ message: 'Title minimal 3 karakter.' });
+  }
 
-    try {
-      const { courseId } = req.params;
-      const { title, description, price } = req.body;
-      const userId = req.user.id;
-      const userRole = req.user.role;
-  
-      // Cek role
-      if (userRole !== 'Owner') {
-        return res.status(403).json({ message: 'Only owners can edit a course' });
-      }
-  
-      // Cek apakah course ini milik owner yang login
-      const checkQuery = `SELECT * FROM courses WHERE id = $1 AND teacher_id = $2`;
-      const checkResult = await pool.query(checkQuery, [courseId, userId]);
-  
-      if (checkResult.rows.length === 0) {
-        return res.status(404).json({ message: 'Course not found or not owned by you' });
-      }
-  
-      // Update course
-      const updateQuery = `
-        UPDATE courses
-        SET title = $1, description = $2, price = $3, updated_at = NOW()
-        WHERE id = $4
-        RETURNING *;
-      `;
-      const updateResult = await pool.query(updateQuery, [
-        title,
-        description,
-        price,
-        courseId,
-      ]);
-  
-      return res.status(200).json({
-        message: 'Course updated successfully',
-        course: updateResult.rows[0],
-      });
-    } catch (error) {
-      console.error('Edit course error:', error);
-      res.status(500).json({ message: 'Internal server error', detail: error.message });
-    }
-  };
-  
-  const deleteCourse = async (req, res) => {
-    try {
-      const { courseId } = req.params;
-      const userId = req.user.id;
-      const userRole = req.user.role;
-  
-      if (userRole !== 'Owner') {
-        return res.status(403).json({ message: 'Only owners can delete courses' });
-      }
-  
-      // Cek apakah course itu milik owner
-      const checkQuery = `SELECT * FROM courses WHERE id = $1 AND teacher_id = $2`;
-      const checkResult = await pool.query(checkQuery, [courseId, userId]);
-  
-      if (checkResult.rows.length === 0) {
-        return res.status(404).json({ message: 'Course not found or not owned by you' });
-      }
-  
-      // Delete course
-      const deleteQuery = `DELETE FROM courses WHERE id = $1`;
-      await pool.query(deleteQuery, [courseId]);
-  
-      res.status(200).json({ message: 'Course deleted successfully' });
-    } catch (error) {
-      console.error('Delete course error:', error);
-      res.status(500).json({ message: 'Internal server error', detail: error.message });
-    }
-  };
-  
-  // GET ALL COURSES FOR USER
-const getAvailableCourses = async (req, res) => {
+  // Siapkan URL gambar jika ada
+  const course_gambar = req.file
+    ? `/uploads/${req.file.filename}`
+    : null;
+
   try {
-    const query = `
-      SELECT title, description, price, created_at 
-      FROM courses 
-      ORDER BY created_at DESC;
-    `;
-    const result = await pool.query(query);
-    res.status(200).json({
-      message: 'Courses retrieved successfully',
-      data: result.rows
+    const { rows } = await pool.query(
+      `INSERT INTO courses
+        (owner_id, title, description, course_gambar, end_courses, created_at)
+       VALUES ($1,$2,$3,$4,$5,NOW())
+       RETURNING *;`,
+      [ownerId, title, description, course_gambar, end_courses || null]
+    );
+    res.status(201).json({
+      message: 'Course berhasil dibuat',
+      course: rows[0]
     });
-  } catch (error) {
-    console.error('Error fetching courses:', error);
-    res.status(500).json({ message: 'Internal server error' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
-  module.exports = {
-    addCourse,
-    getMyCourses,
-    editCourse,
-    deleteCourse,
-    getAvailableCourses
-  };
+// GET MY COURSES
+exports.getMyCourses = async (req, res) => {
+  if (req.user.role !== 'Owner') {
+    return res.status(403).json({ message: 'Hanya owner yang bisa mengakses.' });
+  }
+  try {
+    const { rows } = await pool.query(
+    `SELECT * FROM courses
+     WHERE owner_id = $1
+     ORDER BY created_at DESC;`,
+    [req.user.id]
+  );
+  res.json({ message: 'Daftar courses Anda', data: rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// EDIT COURSE
+exports.editCourse = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const { title, description } = req.body;
+    const ownerId = req.user.id;
+
+    // Pastikan course ada dan milik owner ini
+    const { rowCount } = await pool.query(
+      'SELECT 1 FROM courses WHERE course_id = $1 AND owner_id = $2',
+      [courseId, ownerId]
+    );
+    if (rowCount === 0) {
+      return res.status(404).json({ message: 'Course not found or not owned by you' });
+    }
+
+    // Siapkan URL gambar baru (atau null kalau tidak upload)
+    const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+
+    // Update semua field, gunakan COALESCE supaya gambar lama tetap jika imageUrl null
+    const { rows } = await pool.query(
+      `
+      UPDATE courses
+      SET title = $1,
+          description = $2,
+          course_gambar = COALESCE($3, course_gambar),
+          updated_at = NOW()
+      WHERE course_id = $4
+      RETURNING *;
+      `,
+      [title, description, imageUrl, courseId]
+    );
+
+    return res.status(200).json({
+      message: 'Course updated successfully',
+      course: rows[0]
+    });
+  } catch (error) {
+    console.error('Edit course error:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
+// === DELETE COURSE ===
+// DELETE /course/:courseId
+exports.deleteCourse = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const ownerId = req.user.id;
+    console.log('Attempt delete courseId=', courseId, 'ownerId=', ownerId);
+
+    const { rowCount } = await pool.query(
+      'SELECT 1 FROM courses WHERE course_id = $1 AND owner_id = $2',
+      [courseId, ownerId]
+    );
+    if (rowCount === 0) {
+      console.log('Delete failed: no matching row');
+      return res.status(404).json({ message: 'Course not found or not owned by you' });
+    }
+
+    await pool.query('DELETE FROM courses WHERE course_id = $1', [courseId]);
+    return res.status(200).json({ message: 'Course deleted successfully' });
+  } catch (error) {
+    console.error('Delete course error:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
+// GET ALL COURSES (user/view saja)
+exports.getAvailableCourses = async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT
+         c.course_id,
+         c.title,
+         c.description,
+         c.course_gambar,
+         c.created_at,
+         u.full_name AS owner_name
+       FROM courses c
+       JOIN users u ON u.id = c.owner_id
+       ORDER BY c.created_at DESC;`
+    );
+    res.json({ message: 'Semua courses', data: rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
