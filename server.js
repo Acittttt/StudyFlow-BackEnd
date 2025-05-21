@@ -13,11 +13,11 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.get('/auth', authRoutes);
-app.get('/profile', profileRoutes);
+app.use('/auth', authRoutes);
+app.use('/profile', profileRoutes);
 app.use('/uploads', express.static('uploads'));
-app.get('/course', courseRoutes)
-app.get('/enroll', enrollmentRoutes);
+app.use('/course', courseRoutes);
+app.use('/enroll', enrollmentRoutes);
 
 // Get
 app.get('/', (req, res) => {
