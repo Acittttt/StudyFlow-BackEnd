@@ -15,7 +15,6 @@ app.use(express.json());
 // Routes
 app.use('/auth', authRoutes);
 app.use('/profile', profileRoutes);
-app.use('/uploads', express.static('uploads'));
 app.use('/course', courseRoutes);
 app.use('/enroll', enrollmentRoutes);
 
@@ -24,12 +23,13 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// Debugging rute
 console.log('Rute yang terdaftar:');
-app._router.stack.forEach(function(r){
-  if (r.route && r.route.path){
-    console.log(r.route.path)
+app._router.stack.forEach(function (r) {
+  if (r.route && r.route.path) {
+    console.log(r.route.path);
   } else if (r.name === 'router') {
-    r.handle.stack.forEach(function(layer) {
+    r.handle.stack.forEach(function (layer) {
       if (layer.route) {
         console.log(r.regexp, layer.route.path);
       }

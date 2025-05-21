@@ -1,4 +1,5 @@
 const userModel = require('../models/user');
+const { uploadToVercelBlob } = require('../middlewares/uploadMiddleware');
 
 exports.getProfile = async (req, res) => {
   try {
@@ -18,49 +19,51 @@ exports.getProfile = async (req, res) => {
         created_at: userProfile.created_at,
         profile_picture_url: userProfile.profile_picture_url,
         alamat: userProfile.alamat,
-        tanggal_bergabung: userProfile.tanggal_bergabung
-      }
+        tanggal_bergabung: userProfile.tanggal_bergabung,
+      },
     });
   } catch (error) {
-    console.error('Error fetching profile:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    console.error('Error fetching profile:', error.message, error.stack);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 };
 
 exports.updateProfile = async (req, res) => {
   try {
-    const userId = req.user.id; // Ambil ID pengguna dari token JWT
-  
-    // Ambil data yang ingin diperbarui dari request body
+    const userId = req.user.id;
     let { full_name, username, email, alamat } = req.body;
     let profile_picture_url = null;
-  
-    // Jika ada gambar yang diunggah, simpan gambar dan buat URL-nya
+
+    // Jika ada file yang diunggah, upload ke Vercel Blob
     if (req.file) {
-      profile_picture_url = `/uploads/${req.file.filename}`;
-    }    
-  
-    // Memperbarui data di tabel users (jika ada perubahan pada username, email, full_name)
+      console.log('Uploading file:', req.file.originalname, 'Size:', req.file.size);
+      const blob = await uploadToVercelBlob(req.file);
+      profile_picture_url = blob.url; // URL publik dari Vercel Blob
+      console.log('File uploaded to Vercel Blob:', profile_picture_url);
+    }
+
+    // Update data di tabel users
     let updatedUser = null;
     if (full_name || username || email) {
       updatedUser = await userModel.updateUser(userId, full_name, username, email);
+      console.log('User updated:', updatedUser);
     }
-  
-    // Memperbarui data di tabel users_profile (alamat, gambar profil)
+
+    // Update data di tabel users_profile
     let updatedProfile = await userModel.updateProfileDetails(userId, alamat, profile_picture_url);
-  
-    // Jika tidak ada perubahan pada keduanya
+    console.log('Profile updated:', updatedProfile);
+
+    // Jika tidak ada perubahan
     if (!updatedUser && !updatedProfile) {
       return res.status(400).json({ message: 'Failed to update profile' });
     }
-  
-    // Mengembalikan hasil update profil
+
     return res.status(200).json({
       message: 'Profile updated successfully',
       profile: { ...updatedUser, ...updatedProfile },
     });
   } catch (error) {
-    console.error('Error updating profile:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    console.error('Error updating profile:', error.message, error.stack);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 };
