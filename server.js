@@ -13,11 +13,16 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use('/auth', authRoutes);
-app.use('/profile', profileRoutes);
+app.get('/auth', authRoutes);
+app.get('/profile', profileRoutes);
 app.use('/uploads', express.static('uploads'));
-app.use('/course', courseRoutes)
-app.use('/enroll', enrollmentRoutes);
+app.get('/course', courseRoutes)
+app.get('/enroll', enrollmentRoutes);
+
+// Get
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 console.log('Rute yang terdaftar:');
 app._router.stack.forEach(function(r){
