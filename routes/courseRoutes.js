@@ -1,9 +1,11 @@
-// routes/courseRoutes.js
-const express  = require('express');
-const router   = express.Router();
-const upload   = require('../middlewares/uploadMiddleware');
-const auth     = require('../middlewares/authMiddleware');
-const ctrl     = require('../controllers/courseController');
+const express = require('express');
+const router = express.Router();
+const { upload } = require('../middlewares/uploadMiddleware'); // Destructure upload
+const auth = require('../middlewares/authMiddleware');
+const ctrl = require('../controllers/courseController');
+
+// Logging untuk debugging
+console.log('Upload middleware loaded in courseRoutes:', upload ? 'Success' : 'Failed');
 
 // Semua user (terautentikasi) bisa lihat:
 router.get('/', auth, ctrl.getAvailableCourses);

@@ -4,10 +4,9 @@ const profileController = require('../controllers/profileController');
 const authenticate = require('../middlewares/authMiddleware');
 const { upload } = require('../middlewares/uploadMiddleware');
 
-// PUT profile/profile
-router.put('/edit', authenticate, upload.single('profile_picture'), profileController.updateProfile);
+console.log('Upload middleware loaded in profileRoutes:', upload ? 'Success' : 'Failed');
 
-// GET profile/profile
+router.put('/edit', authenticate, upload.single('profile_picture'), profileController.updateProfile);
 router.get('/data', authenticate, profileController.getProfile);
 
 module.exports = router;
