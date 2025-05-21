@@ -20,7 +20,7 @@ app.use('/enroll', enrollmentRoutes);
 
 // Get
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.status(200).json({ message: 'Welcome to StudyFlow Backend API' });
 });
 
 // Debugging rute
